@@ -1,0 +1,52 @@
+from classes.Reality import *
+from classes.Organization import *
+from classes.User import *
+from functions.others import *
+
+
+def generate_reality(m):
+    reality = Reality(m)
+    return reality
+
+
+def generate_organizations(m, reality, n_o):
+    organizations = []
+    for _ in range(n_o):
+        organizations.append(Organization(m, reality))
+    return organizations
+
+
+def generate_users(reality, organizations, n_u, m, k, p, t, wr, dr):
+    # Initiate Users
+    user_list = []
+    delegate_list = []
+
+    for organization in organizations:
+        tokens = list(distribute_tokens(n_u, t, wr))
+        ids = list(range(n_u))
+        whale_number = int(n_u * wr)
+        users = []
+
+        for _ in range(n_u):
+            users.append(User(reality, organization, m, k, p, ids, tokens))
+
+        for j in range(whale_number):  # range(n_u-whale_number, n_u)
+            users[j].whale = True
+
+         # Initiate Delegates
+        #dele_num = int(round(n_u * dr))
+        # 고래는 위임 대상에서 제거해야 하는지????????????????
+        # Selection by Random
+        # delegates = random.sample(users, dele_num)
+        
+        dele_num = int(round(n_u * dr))
+        # Selection by Reputation
+        delegates = sorted(users, key=lambda user: user.p *
+                           user.performance, reverse=True)
+        delegates = delegates[:dele_num]
+        # for d in delegates:
+        #     print(d.id, d.performance, d.p)
+
+        user_list.append(users)
+        delegate_list.append(delegates)
+    return user_list, delegate_list
