@@ -4,19 +4,19 @@ from classes.User import *
 from functions.others import *
 
 
-def generate_reality(m):
-    reality = Reality(m)
+def generate_reality(m, k):
+    reality = Reality(m, k)
     return reality
 
 
-def generate_organizations(m, reality, n_o):
+def generate_organizations(reality, m, k, n_o):
     organizations = []
     for _ in range(n_o):
-        organizations.append(Organization(m, reality))
+        organizations.append(Organization(reality, m, k))
     return organizations
 
 
-def generate_users(reality, organizations, n_u, m, k, p, t, wr, dr):
+def generate_users(reality, organizations, n_u, m, k, t, wr, dr):
     # Initiate Users
     user_list = []
     delegate_list = []
@@ -28,7 +28,7 @@ def generate_users(reality, organizations, n_u, m, k, p, t, wr, dr):
         users = []
 
         for _ in range(n_u):
-            users.append(User(reality, organization, m, k, p, ids, tokens))
+            users.append(User(reality, organization, m, k, ids, tokens))
 
         for j in range(whale_number):  # range(n_u-whale_number, n_u)
             users[j].whale = True
@@ -41,8 +41,7 @@ def generate_users(reality, organizations, n_u, m, k, p, t, wr, dr):
         
         dele_num = int(round(n_u * dr))
         # Selection by Reputation
-        delegates = sorted(users, key=lambda user: user.p *
-                           user.performance, reverse=True)
+        delegates = sorted(users, key=lambda user: user.performance, reverse=True)
         delegates = delegates[:dele_num]
         # for d in delegates:
         #     print(d.id, d.performance, d.p)

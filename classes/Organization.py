@@ -3,10 +3,11 @@ from functions.others import *
 
 
 class Organization:
-    def __init__(self, m, reality):
-        self.m = m
+    def __init__(self, reality, m, k):
         self.reality = reality
-        self.vector = generate_org_vector(reality)
+        self.m = m
+        self.k = k
+        self.vector = [generate_beliefs(0.5) for _ in range(m)]
         self.performance = get_performance(self, reality)
         self.reality = reality
         self.changed = False
@@ -19,12 +20,13 @@ class Organization:
         # renew performance here
         self.performance = cnt/self.m
         return self.performance
+    
 
-    def initiate_vote_on(self, vote_on, users, delegators, dele_size, dele_duration):
+    def initiate_vote_on(self, vote_on, users, delegators, dele_size, dele_duration, search_ratio, gas_fee):
         self.users = users
         self.vote_on = vote_on
         self.changed = False
-        vote_result = [0, 0]
+        self.vote_result = [0, 0]
         n_u = len(users)
 
         # generate random user order list
@@ -35,7 +37,7 @@ class Organization:
 
         # re-initiate the values in every vote
         for user in users:
-            user.p_yn = user.get_p_yn()
+            user.p = 0
             user.voted = False
             user.participated = False
             user.delegated = False
@@ -47,7 +49,7 @@ class Organization:
 
             # If dele_duration is full, start new search!
             if user.dele_dur == dele_duration:
-                print("A!!!!!!!!! dele_duration full: ", user.dele_dur)
+                #print("A!!!!!!!!! dele_duration full: ", user.dele_dur)
                 user.delegating = False
                 user.dele_dur = 0
                 # delegation duration이 끝났으면 delegator의 size 하나를 줄인다.
@@ -56,54 +58,54 @@ class Organization:
 
         for user in user_in_order:
             # Call vote function - here begins vote, search, and delegate
-            print()
-            print("====================================")
-            print("USER ID: ", user.id)
-            print("====================================")
-            result = user.search(users, delegators, vote_on, dele_size)
+            #print()
+            #print("====================================")
+            #print("USER ID: ", user.id)
+            #print("====================================")
+            result = user.search(users, delegators, vote_on, dele_size, self.vote_result, search_ratio, gas_fee)
             if result != None:
                 vote_on_value, token = result
-                vote_result[vote_on_value] += token
-            print()
-            print()
-            print()
-            print("VOTE RESULT: ", vote_result)
+                self.vote_result[vote_on_value] += token
+            #print()
+            #print()
+            #print()
+            #print("VOTE RESULT: ", self.vote_result)
 
-        if vote_result[0] > vote_result[1]:
+        if self.vote_result[0] > self.vote_result[1]:
             chosen_value = 0
         else:
             chosen_value = 1
 
-        return vote_result, chosen_value
+        return self.vote_result, chosen_value
 
     def change_org_attr(self, chosen_value):
         current_value = self.vector[self.vote_on]
         if current_value != chosen_value:
-            print("Organization Attr Changed!")
+            #print("Organization Attr Changed!")
             self.changed = True
             self.vector[self.vote_on] = chosen_value
         perf_before = self.performance
         perf_after = self.get_performance()
-        print("ORGANIZATION PERFORMANCE: ", perf_before, "->", perf_after)
+        #print("ORGANIZATION PERFORMANCE: ", perf_before, "->", perf_after)
         return perf_before, perf_after
 
     def change_usr_attr(self, org_perf_before, org_perf_after, chosen_value):
         # change user attributes only when organization's performance increased:
-        if org_perf_after > org_perf_before:
-            for user in self.users:
-                if user.participated:
-                    if user.vector[self.vote_on] != chosen_value:
-                        user.vector[self.vote_on] = chosen_value
-                # re-calculate user's performance
-                user.get_performance()
+        # if org_perf_after > org_perf_before:
+        #     for user in self.users:
+        #         if user.participated:
+        #             if user.vector[self.vote_on] != chosen_value:
+        #                 user.vector[self.vote_on] = chosen_value
+        #         # re-calculate user's performance
+        #         user.get_performance()
 
         # #Change user attributes according to the result
-        # for user in self.users:
-        #     if user.participated:
-        #         if user.vector[self.vote_on] != chosen_value:
-        #             user.vector[self.vote_on] = chosen_value
-        #     # re-calculate user's performance
-        #     user.get_performance()
+        for user in self.users:
+            if user.participated:
+                if user.vector[self.vote_on] != chosen_value:
+                    user.vector[self.vote_on] = chosen_value
+            # re-calculate user's performance
+            user.get_performance()
 
     def get_vote_ctrs(self):
         vote_ctr_sum = 0

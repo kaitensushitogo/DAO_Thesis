@@ -6,7 +6,7 @@ from functions.others import *
 """
 
 
-def vote_handler(organization, users, delegators, vote_list, dele_size, dele_duration):
+def vote_handler(organization, users, delegators, vote_list, dele_size, dele_duration, search_ratio, gas_fee):
     vote_ctr_sum_list = []
     dele_ctr_sum_list = []
     part_list = []
@@ -17,7 +17,7 @@ def vote_handler(organization, users, delegators, vote_list, dele_size, dele_dur
 
     for vote_target in vote_list:
         vote_result, chosen_value = organization.initiate_vote_on(
-            vote_target, users, delegators, dele_size, dele_duration)
+            vote_target, users, delegators, dele_size, dele_duration, search_ratio, gas_fee)
 
         infl = organization.get_user_influence(vote_result, chosen_value)
         infl_list.append(infl)
@@ -44,7 +44,7 @@ def vote_handler(organization, users, delegators, vote_list, dele_size, dele_dur
     return vote_ctr_sum_list, dele_ctr_sum_list, part_list, org_perf_list, usr_perf_list, infl_list, gini_list
 
 
-def run_model(reality, organizations, users_list, dele_list, rds, v, dele_size, dele_duration):
+def run_model(reality, organizations, users_list, dele_list, rds, v, dele_size, dele_duration, search_ratio, gas_fee):
 
     m = reality.m
     n_o = len(organizations)
@@ -71,7 +71,7 @@ def run_model(reality, organizations, users_list, dele_list, rds, v, dele_size, 
             vote_list = generate_random_vote_list(m, v)
 
             vs, ds, ps, opfs, upfs, infs, gs = vote_handler(
-                organizations[i], users_list[i], dele_list[i], vote_list, dele_size, dele_duration)
+                organizations[i], users_list[i], dele_list[i], vote_list, dele_size, dele_duration, search_ratio, gas_fee)
 
             votes.append(vs)
             deles.append(ds)

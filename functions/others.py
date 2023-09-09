@@ -48,6 +48,11 @@ def generate_org_vector(reality):
             org_vector[i] = int(not(reality.vector[i]))
     return org_vector
 
+def generate_beliefs(prob):
+    if random.random() < prob:
+        return True
+    else:
+        return False
 
 """
 (2) Calculators
@@ -65,6 +70,41 @@ def get_performance(organization, reality):
     performance = cnt/organization.m
     return performance
 
+def update_user_performance(user, reality):
+    performance = 0
+    size = user.m
+    payoff = 1 / size
+
+    for i in range(size):
+        if user.vector[i] != reality.vector[i]:
+            continue
+        x = True
+        for j in range(user.k):
+            if user.vector[reality.interdependence[i][j]] != reality.vector[reality.interdependence[i][j]]:
+                x = False
+                break
+        if not x:
+            continue
+        performance += payoff
+    return performance
+
+def update_org_performance(organization, reality):
+    performance = 0
+    size = organization.m
+    payoff = 1 / size
+
+    for i in range(size):
+        if organization.vector[i] != reality.vector[i]:
+            continue
+        x = True
+        for j in range(organization.k):
+            if organization.vector[reality.interdependence[i][j]] != reality.vector[reality.interdependence[i][j]]:
+                x = False
+                break
+        if not x:
+            continue
+        performance += payoff
+    return performance
 
 # def calculate_whales(n, wr):
 #     if wr == 0:
@@ -167,30 +207,30 @@ def mean_influencers(var, n_o, rds, v, c_index):
 """
 
 
-def plot_vote_dele_result(vote_res, dele_res, n_u, wr, p, k, dele_size, dele_duration, dele_ratio):
+def plot_vote_dele_result(vote_res, dele_res, n_u, wr, k, dele_size, dele_duration, dele_ratio, search_ratio, gas_fee):
     plt.figure(figsize=(12, 6))
     plt.plot(vote_res, label='Vote', color='black', ls="--")
     plt.plot(dele_res, label='Delegate', color='black')
     plt.xlabel('Rounds')
-    plt.ylabel('Counts')
+    plt.ylabel('User Counts')
     plt.ylim(0, n_u+5)
     plt.grid(axis='x', alpha=0.5, ls=':')
     plt.legend(loc='upper left')
-    plt.savefig("./images/wr({wr})_p({p})_k({k})_size({dele_size})_duration({dele_duration})_ratio({dele_ratio})__vote_dele.png".format(
-        wr=wr, p=p, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
+    plt.savefig("./images/vote_dele__wr({wr})_k({k})_ratio({dele_ratio})_size({dele_size})_duration({dele_duration})_search({search_ratio})_gas({gas_fee}).png".format(
+        wr=wr, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio, search_ratio=search_ratio, gas_fee=gas_fee))
 
 
-def plot_operf_result(perf_res, wr, p, k, dele_size, dele_duration, dele_ratio):
+def plot_operf_result(perf_res, wr, k, dele_size, dele_duration, dele_ratio, search_ratio, gas_fee):
     plt.figure(figsize=(12, 6))
     plt.plot(perf_res, label='Performance',
              color='black', ls='dotted')
     plt.xlabel('Rounds')
-    plt.ylabel('Counts')
+    plt.ylabel('Performance')
     plt.ylim(0, 1.0)
     plt.grid(axis='x', alpha=0.5, ls=':')
     plt.legend(loc='upper left')
-    plt.savefig("./images/wr({wr})_p({p})_k({k})_size({dele_size})_duration({dele_duration})_ratio({dele_ratio})__org_perf.png".format(
-        wr=wr, p=p, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
+    plt.savefig("./images/org_perf__wr({wr})_k({k})_ratio({dele_ratio})_size({dele_size})_duration({dele_duration})_search({search_ratio})_gas({gas_fee}).png".format(
+        wr=wr, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio, search_ratio=search_ratio, gas_fee=gas_fee))
 
 
 def plot_uperf_result(perf_res, wr, p, k, dele_size, dele_duration, dele_ratio):
@@ -198,12 +238,12 @@ def plot_uperf_result(perf_res, wr, p, k, dele_size, dele_duration, dele_ratio):
     plt.plot(perf_res, label='Performance',
              color='black', ls='dotted')
     plt.xlabel('Rounds')
-    plt.ylabel('Counts')
+    plt.ylabel('Performance')
     plt.ylim(0, 1)
     plt.grid(axis='x', alpha=0.5, ls=':')
     plt.legend(loc='upper left')
-    plt.savefig("./images/wr({wr})_p({p})_k({k})_size({dele_size})_duration({dele_duration})_ratio({dele_ratio})__user_perf.png".format(
-        wr=wr, p=p, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
+    plt.savefig("./images/wr({wr})_k({k})_ratio({dele_ratio})_size({dele_size})_duration({dele_duration})_search({search_ratio})__user_perf.png".format(
+        wr=wr, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
 
 
 def plot_part_res(res, n_u, wr, p, k, dele_size, dele_duration, dele_ratio):
@@ -214,8 +254,8 @@ def plot_part_res(res, n_u, wr, p, k, dele_size, dele_duration, dele_ratio):
     plt.ylim(0, n_u+5)
     plt.grid(axis='x', alpha=0.5, ls=':')
     plt.legend(loc='upper left')
-    plt.savefig("./images/wr({wr})_p({p})_k({k})_size({dele_size})_duration({dele_duration})_ratio({dele_ratio})__part_res.png".format(
-        wr=wr, p=p, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
+    plt.savefig("./images/wr({wr})_k({k})_ratio({dele_ratio})_size({dele_size})_duration({dele_duration})_search({search_ratio})__part_res.png".format(
+        wr=wr, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
 
 
 def plot_infl_res(res, wr, p, k, dele_size, dele_duration, dele_ratio):
@@ -226,8 +266,8 @@ def plot_infl_res(res, wr, p, k, dele_size, dele_duration, dele_ratio):
     plt.ylim(0, 10)
     plt.grid(axis='x', alpha=0.5, ls=':')
     plt.legend(loc='upper left')
-    plt.savefig("./images/wr({wr})_p({p})_k({k})_size({dele_size})_duration({dele_duration})_ratio({dele_ratio})__infl_res.png".format(
-        wr=wr, p=p, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
+    plt.savefig("./images/wr({wr})_k({k})_ratio({dele_ratio})_size({dele_size})_duration({dele_duration})_search({search_ratio})__infl_res.png".format(
+        wr=wr, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
 
 
 def plot_gini_res(res, wr,  p, k, dele_size, dele_duration, dele_ratio):
@@ -238,8 +278,8 @@ def plot_gini_res(res, wr,  p, k, dele_size, dele_duration, dele_ratio):
     plt.ylim(0, 1)
     plt.grid(axis='x', alpha=0.5, ls=':')
     plt.legend(loc='upper left')
-    plt.savefig("./images/wr({wr})_p({p})_k({k})_size({dele_size})_duration({dele_duration})_ratio({dele_ratio})__gini_res.png".format(
-        wr=wr, p=p, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
+    plt.savefig("./images/wr({wr})_k({k})_ratio({dele_ratio})_size({dele_size})_duration({dele_duration})_search({search_ratio})__gini_res.png".format(
+        wr=wr, k=k, dele_size=dele_size, dele_duration=dele_duration, dele_ratio=dele_ratio))
 
 
 """
