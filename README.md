@@ -1,6 +1,6 @@
 # Is Centralization the threat of Decentralized Autonomous Organization(DAO)s?
 
-- This is a NK-modeled simulation platform coded for my research paper.
+- This is a computational model coded for my research.
 - Keyword: #DAO, #Governance, #Decentralization, #Centralization, #Strategic Management, #Blockchain
 
-- Version: Search delegates by designated delegates.
+- Version: The Calcus of Voting
