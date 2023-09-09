@@ -13,8 +13,8 @@ import random
 import warnings
 np.set_printoptions(4)
 np.seterr(invalid='ignore')
-warnings.filterwarnings("ignore", category=DeprecationWarning) 
-warnings.filterwarnings("ignore", category=FutureWarning) 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 random.seed(3)
 
 
@@ -30,7 +30,7 @@ params = {
     'whale_ratio': [0, 0.2],
     'interdependence': [0, 5, 10],
     'delegate_size': [100],
-    'delegation_duration': [1, 5, 10, 50, 100], 
+    'delegation_duration': [1, 5, 10, 50, 100],
     'delegator_ratio': [0.05, 0.2, 0.5],
     'search_ratio': [0.01, 0.05, 0.2, 0.5, 1],
     'gas_fee': [0, 0.05, 0.2]
@@ -80,9 +80,10 @@ for config in param_grid(params):
     mean_operfs = mean_result(o_performances)
 
     # Draw Plots
-    # plot_vote_dele_result(mean_votes, mean_deles, n_u,wr, k, ds, dd, dr, sr, gf)
-    # plot_operf_result(mean_operfs, wr, k, ds, dd, dr, sr, gf)
-    
+    plot_vote_dele_result(mean_votes, mean_deles, n_u,
+                          wr, k, ds, dd, dr, sr, gf)
+    plot_operf_result(mean_operfs, wr, k, ds, dd, dr, sr, gf)
+
     # Save to CSV File
     data = {'whale': wr,
             'k': k,
@@ -90,8 +91,8 @@ for config in param_grid(params):
             'size': ds,
             'duration': dd,
             'search_ratio': sr,
-            'gas_fee':gf,
-            'performance': round(mean_operfs[-1],4)}
+            'gas_fee': gf,
+            'performance': round(mean_operfs[-1], 4)}
     print(data)
     perf_df = pd.DataFrame([data])
     final_df = final_df.append(perf_df)
@@ -99,7 +100,3 @@ for config in param_grid(params):
 final_df.to_csv('./result/final_pf.csv')
 
 # %%
-
-
-
-
