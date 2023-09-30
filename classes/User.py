@@ -1,21 +1,23 @@
-import random, math
+import random
+import math
 from functions.others import *
 
 
 class User:
     def __init__(self, reality, organization, m, k, ids, tokens):
+        self.reality = reality
+        self.organization = organization
         self.id = ids.pop(0)
         self.m = m
         self.k = k
-        self.vector = [generate_beliefs(0.5) for _ in range(m)]
-        self.utility = [random.random() for _ in range(m)]
+        self.vector = generate_org_vector(reality)
+        # [random.random() for _ in range(m)]
+        self.utility = [generate_beliefs(0.5) for _ in range(m)]
         self.p = 0
-        self.performance = get_performance(self, reality)
+        self.performance = update_user_performance(self, reality)
         self.token = tokens.pop(0)
         self.tokens_delegated = 0
         self.total_tokens_delegated = 0
-        self.reality = reality
-        self.organization = organization
         self.voted = False
         self.participated = False
         self.delegated = False
@@ -35,31 +37,60 @@ class User:
                 cnt += 1
         self.performance = cnt/self.m
         return self.performance
-    
-    def check_interdependence(self, candidate):
-        cnt = 0
-        idxs = list(range(self.m))
-        idxs.pop(self.vote_on)
-        chosen_idxs = random.sample(idxs, self.k)
 
-        for idx in chosen_idxs:
-            if self.vector[idx] == candidate.vector[idx]:
-                cnt += 1
-        if self.k == cnt:
-            return True
-        else:
-            return False
-        
+    # def check_interdependence(self, candidate, interdependence, vote_on):
+    #     cnt = 0
+    #    #print(interdependence[vote_on])
+    #     for id in interdependence[vote_on]:    # [1,2,3,4,5] if k=5
+    #        #print(self.vector[id], candidate.vector[id])
+    #         if self.vector[id] == candidate.vector[id]:  # user1[1] == user7[1]
+    #             cnt += 1
+
+    #     if cnt == self.k:
+    #        #print("manzoku")
+    #         return True
+    #     else:
+    #         return False
+
+        # cnt = 0
+        # idxs = list(range(self.m))
+        # idxs.pop(self.vote_on)
+        # chosen_idxs = random.sample(idxs, self.k)
+
+        # for idx in chosen_idxs:
+        #     if self.vector[idx] == candidate.vector[idx]:
+        #         cnt += 1
+        # if self.k == cnt:
+        #     return True
+        # else:
+        #     return False
+
     def search(self, users, delegators, vote_on, dele_size, vote_res, search_ratio, gas_fee):
-        #print("USER PERFORMANCE", self.performance)
+        #print("USER PERFORMANCE: ", self.performance)
+        # print("VOTE ON ATTR#:", vote_on)
         self.vote_on = vote_on
-        
-        # Calculate the Probability of Decisive Vote
-        if np.argmax(vote_res) != np.argmax(vote_res[self.vector[vote_on]] + self.token):
-            prob_of_decisive = 1
+        attr_0 = vote_res[0]
+        attr_1 = vote_res[1]
+
+        if self.vector[vote_on] == 0:
+            attr_0 += self.token
         else:
-            prob_of_decisive = 0
-        
+            attr_1 += self.token
+
+        # Calculate the Probability of Decisive Vote
+        if sum(vote_res) == 0:
+            if vote_res[self.vector[vote_on]] + self.token > vote_res[not(self.vector[vote_on])]:
+                #print("0타이. 무조건 p=1.")
+                prob_of_decisive = 1
+            else:
+                prob_of_decisive = 0
+        else:
+            if np.argmax(vote_res) != np.argmax([attr_0, attr_1]):
+                #print("값아ㅣ 바뀌어서 p=1")
+                prob_of_decisive = 1
+            else:
+                prob_of_decisive = 0
+
         # Calculate the Value of Outcome
         value_of_outcome = self.utility[vote_on]
 
@@ -82,27 +113,34 @@ class User:
             delegator = users[self.delegator_id]
             return self.delegate(vote_on, delegator)
         else:
+            # Case of Probability of Voting
             if self.p > random.random():
-                self.vote(vote_on)
+                # print("투-표")
+                return self.vote(vote_on)
             else:
-                search = random.sample(delegators, int(len(delegators)*search_ratio))
-                    
-                # Exclude self from the searched list
-                if self in search:
-                    search.remove(self)
-                    
-                max_reputation = 0
-                for s in search:
-                    if self.check_interdependence(s):
-                        if s.dele_size < dele_size:
-                            # Delegator's participation rate should be 1
-                            if s.performance * 1 > max_reputation:
-                                #print("--> 위임검색 아이디: ", s.id, "위임 명성:", s.performance * 1)
-                                self.delegator_id = s.id
-                                max_reputation = s.performance
-                                max_id = s.id
+                # print("검-색")
+                search = random.sample(delegators, int(
+                    len(delegators) * search_ratio))
 
-                if self.performance < max_reputation:
+                #print("검색 결과 위임 후보")
+                # for candidate in search:
+                #print(candidate.id, end=' | ')
+
+                # # Exclude self from the searched list
+                # if self in search:
+                #     search.remove(self)
+
+                max_performance = 0
+                for s in search:
+                    # if self.check_interdependence(s, self.organization.interdependence, vote_on):
+                    if s.dele_size < dele_size:
+                        if s.performance > max_performance:
+                            #print("--> 위임검색 아이디: ", s.id,"위임 Performance:", s.performance)
+                            self.delegator_id = s.id
+                            max_performance = s.performance
+                            max_id = s.id
+
+                if self.performance < max_performance:
                     delegator = users[max_id]
 
                     # if delgatee is a voter, delagatee can be delegated.
@@ -111,18 +149,19 @@ class User:
                         delegator.dele_size += 1
                         #print("DELEGATE ID?: ", delegator.id)
                         #print("DELEGATE의 DELE_SIZE?: ", delegator.dele_size)
+                        # print("위-임")
                         return self.delegate(vote_on, delegator)
                     # if delegator's dele_size is full, deleagtee should find alternatives.
                     elif users[delegator.id].dele_size < dele_size:
                         #print("DELE_SIZE FULL, FINDING ALTERNATIVE DELEGATE!")
                         idx = delegators.index(users[delegator.id])
-                        #print(users[delegator.id].id)
-                        #print(idx)
+                        # print(users[delegator.id].id)
+                        # print(idx)
                         tmp_delegators = delegators
                         tmp_delegators[idx].performance = 0
-                        self.search(users, tmp_delegators, vote_on, dele_size, vote_res, search_ratio, gas_fee)
+                        self.search(users, tmp_delegators, vote_on,
+                                    dele_size, vote_res, search_ratio, gas_fee)
                 else:
-                    #print("=== p_yn is false 참여 안한다잉 -===")
                     return
 
     def vote(self, vote_on):

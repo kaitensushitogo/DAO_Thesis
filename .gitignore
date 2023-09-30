@@ -4,8 +4,8 @@ test.py
 .pyc
 .__pycache__/*
 .DS_Store
-#/images/*
-#/result/*
+/images/*
+/result/*
 classes/__init__.py
 functions/__init__.py
 classes/__pycache__

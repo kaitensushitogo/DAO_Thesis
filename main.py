@@ -25,15 +25,15 @@ params = {
     'attributes': [100],
     'users': [100],
     'organizations': [50],
-    'tokens': [100],
+    'tokens': [100000000],
 
     'whale_ratio': [0, 0.2],
     'interdependence': [0, 5, 10],
     'delegate_size': [100],
-    'delegation_duration': [1, 5, 10, 50, 100],
-    'delegator_ratio': [0.05, 0.2, 0.5],
-    'search_ratio': [0.01, 0.05, 0.2, 0.5, 1],
-    'gas_fee': [0, 0.05, 0.2]
+    'delegation_duration': [1, 10, 50],
+    'delegator_ratio': [1],
+    'search_ratio': [1, 0.5, 0.2],
+    'gas_fee': [0]
 }
 
 vote_df = pd.DataFrame()

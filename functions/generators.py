@@ -33,18 +33,35 @@ def generate_users(reality, organizations, n_u, m, k, t, wr, dr):
         for j in range(whale_number):  # range(n_u-whale_number, n_u)
             users[j].whale = True
 
-         # Initiate Delegates
-        #dele_num = int(round(n_u * dr))
-        # 고래는 위임 대상에서 제거해야 하는지????????????????
+        # User Performance Test
+        # print()
+        # print("User Performance List")
+        # for i in range(len(users)):
+        #     print(users[i].id, users[i].performance)
+
+        # Initiate Delegates
+        # 고래는 위임 대상에서 제거하지 않음
+
         # Selection by Random
-        # delegates = random.sample(users, dele_num)
-        
         dele_num = int(round(n_u * dr))
-        # Selection by Reputation
-        delegates = sorted(users, key=lambda user: user.performance, reverse=True)
+        delegates = random.sample(users, dele_num)
         delegates = delegates[:dele_num]
-        # for d in delegates:
-        #     print(d.id, d.performance, d.p)
+
+        # Selection by Utility(만들어보기!)
+
+        # Selection by Performance
+
+        # Selection by Reputation
+        # dele_num = int(round(n_u * dr))
+        # delegates = sorted(
+        #     users, key=lambda user: user.performance, reverse=True)
+        # delegates = delegates[:dele_num]
+
+        # Delegators Performance Test
+        # print()
+        # print("Chosen Delegates List")
+        # for i in range(len(delegates)):
+        #     print(delegates[i].id, delegates[i].performance)
 
         user_list.append(users)
         delegate_list.append(delegates)
