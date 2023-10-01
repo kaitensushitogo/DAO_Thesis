@@ -48,11 +48,22 @@ def generate_org_vector(reality):
             org_vector[i] = int(not(reality.vector[i]))
     return org_vector
 
+
 def generate_beliefs(prob):
     if random.random() < prob:
         return True
     else:
         return False
+
+
+def generate_utility(reality):
+    m = len(reality.vector)
+    randomList = []
+    for _ in range(m):
+        n = random.random()
+        randomList.append(n)
+    return randomList
+
 
 """
 (2) Calculators
@@ -69,6 +80,7 @@ def get_performance(organization, reality):
             cnt += 1
     performance = cnt/organization.m
     return performance
+
 
 def update_user_performance(user, reality):
     performance = 0
@@ -88,22 +100,32 @@ def update_user_performance(user, reality):
         performance += payoff
     return performance
 
+
 def update_org_performance(organization, reality):
     performance = 0
     size = organization.m
     payoff = 1 / size
 
     for i in range(size):
+        print()
+        print(i)
+        print(organization.vector[i], reality.vector[i])
         if organization.vector[i] != reality.vector[i]:
             continue
         x = True
         for j in range(organization.k):
+            print()
+            print(j)
+            print(organization.vector[reality.interdependence[i][j]],
+                  reality.vector[reality.interdependence[i][j]])
             if organization.vector[reality.interdependence[i][j]] != reality.vector[reality.interdependence[i][j]]:
                 x = False
                 break
         if not x:
             continue
         performance += payoff
+        print("올라간다0")
+    print("Performance:", performance)
     return performance
 
 # def calculate_whales(n, wr):
@@ -209,8 +231,8 @@ def mean_influencers(var, n_o, rds, v, c_index):
 
 def plot_vote_dele_result(vote_res, dele_res, n_u, wr, k, dele_size, dele_duration, dele_ratio, search_ratio, gas_fee):
     plt.figure(figsize=(12, 6))
-    plt.plot(vote_res, label='Vote', color='black', ls="--")
-    plt.plot(dele_res, label='Delegate', color='black')
+    plt.plot(vote_res, label='Vote', color='blue')
+    plt.plot(dele_res, label='Delegate', color='orange')
     plt.xlabel('Rounds')
     plt.ylabel('User Counts')
     plt.ylim(0, n_u+5)
@@ -226,7 +248,7 @@ def plot_operf_result(perf_res, wr, k, dele_size, dele_duration, dele_ratio, sea
              color='black', ls='dotted')
     plt.xlabel('Rounds')
     plt.ylabel('Performance')
-    plt.ylim(0, 1.0)
+    plt.ylim(-0.05, 1.05)
     plt.grid(axis='x', alpha=0.5, ls=':')
     plt.legend(loc='upper left')
     plt.savefig("./images/org_perf__wr({wr})_k({k})_ratio({dele_ratio})_size({dele_size})_duration({dele_duration})_search({search_ratio})_gas({gas_fee}).png".format(

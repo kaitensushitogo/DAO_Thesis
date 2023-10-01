@@ -27,11 +27,11 @@ params = {
     'organizations': [50],
     'tokens': [100000000],
 
-    'whale_ratio': [0, 0.2],
+    'whale_ratio': [0.2],
     'interdependence': [0, 5, 10],
     'delegate_size': [100],
-    'delegation_duration': [1, 10, 50],
-    'delegator_ratio': [1],
+    'delegation_duration': [1, 20, 50],
+    'delegator_ratio': [0.5, 0.2, 0.05],
     'search_ratio': [1, 0.5, 0.2],
     'gas_fee': [0]
 }
@@ -72,7 +72,7 @@ for config in param_grid(params):
 
     # Run Simulation
     votes, delegations, participations, o_performances, u_performances, influencers, ginis = run_model(
-        reality, organizations, users, deles, rds, v, ds, dd, sr, gf)
+        reality, organizations, users, deles, rds, v, ds, dd, sr, gf, t)
 
     # Average Results
     mean_votes = mean_result(votes)

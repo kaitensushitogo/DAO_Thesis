@@ -66,7 +66,7 @@ class Organization:
 
             # If dele_duration is full, start new search!
             if user.dele_dur == dele_duration:
-                #print("A!!!!!!!!! dele_duration full: ", user.dele_dur)
+                #print("Duration Full: ", user.dele_dur)
                 user.delegating = False
                 user.dele_dur = 0
                 # delegation duration이 끝났으면 delegator의 size 하나를 줄인다.
@@ -81,7 +81,6 @@ class Organization:
             # print("====================================")
             result = user.search(
                 users, delegators, vote_on, dele_size, self.vote_result, search_ratio, gas_fee)
-            # print(result)
             if result != None:
                 vote_on_value, token = result
                 self.vote_result[vote_on_value] += token
@@ -116,25 +115,19 @@ class Organization:
         return perf_before, perf_after
 
     def change_usr_attr(self, org_perf_before, org_perf_after, chosen_value):
-        # # change user attributes only when organization's performance increased:
-        # if org_perf_after > org_perf_before:
-        #     for user in self.users:
-        #         if user.participated:
-        #             if user.vector[self.vote_on] != chosen_value:
-        #                 user.vector[self.vote_on] = chosen_value
-        #         # re-calculate user's performance
-        #         user.get_performance()
-
         # Change user attributes according to the result
         # print('----------------')
-        #print("User performance 다시")
+        #print("User performance 올라간 애들 나와라")
         for user in self.users:
+            perf_before = user.performance
             if user.participated:
                 if user.vector[self.vote_on] != chosen_value:
                     user.vector[self.vote_on] = chosen_value
             # re-calculate user's performance
             user.performance = update_user_performance(user, self.reality)
-        #print(user.id, user.performance)
+            perf_after = user.performance
+            # if perf_after > perf_before:
+            #print(user.id, user.performance)
         # print('----------------')
 
     def get_vote_ctrs(self):
@@ -199,15 +192,5 @@ class Organization:
         area_between_curves = np.trapz(
             perfect_equality_curve - lorenz_curve, dx=1/n)
         gini_index = area_between_curves / 0.5
-
-        # tkns_list = []
-        # for user in users:
-        #     tkns_list.append(user.total_tokens_delegated)
-        # x = np.array(tkns_list)
-        # x.sort()
-        # total = 0
-        # for i, xi in enumerate(x[:-1], 1):
-        #     total += np.sum(np.abs(xi-x[i:]))
-        # return total/(len(x)**2 * np.mean(x))
 
         return gini_index

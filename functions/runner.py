@@ -6,7 +6,7 @@ from functions.others import *
 """
 
 
-def vote_handler(organization, users, delegators, vote_list, dele_size, dele_duration, search_ratio, gas_fee):
+def vote_handler(reality, organization, users, delegators, vote_list, dele_size, dele_duration, search_ratio, gas_fee, tokens):
     vote_ctr_sum_list = []
     dele_ctr_sum_list = []
     part_list = []
@@ -22,7 +22,8 @@ def vote_handler(organization, users, delegators, vote_list, dele_size, dele_dur
         infl = organization.get_user_influence(vote_result, chosen_value)
         infl_list.append(infl)
 
-        perf_before, perf_after = organization.change_org_attr(chosen_value)
+        perf_before, perf_after = organization.change_org_attr(
+            vote_result, chosen_value, tokens)
         organization.change_usr_attr(perf_before, perf_after, chosen_value)
 
         vot_ctr_sum, dele_ctr_sum = organization.get_vote_ctrs()
@@ -32,7 +33,7 @@ def vote_handler(organization, users, delegators, vote_list, dele_size, dele_dur
         part = organization.get_participation_ctrs()
         part_list.append(part)
 
-        org_perf = organization.get_performance()
+        org_perf = organization.update_performance(reality)
         org_perf_list.append(org_perf)
 
         usr_perf = organization.get_usr_performance()
@@ -44,7 +45,7 @@ def vote_handler(organization, users, delegators, vote_list, dele_size, dele_dur
     return vote_ctr_sum_list, dele_ctr_sum_list, part_list, org_perf_list, usr_perf_list, infl_list, gini_list
 
 
-def run_model(reality, organizations, users_list, dele_list, rds, v, dele_size, dele_duration, search_ratio, gas_fee):
+def run_model(reality, organizations, users_list, dele_list, rds, v, dele_size, dele_duration, search_ratio, gas_fee, tokens):
 
     m = reality.m
     n_o = len(organizations)
@@ -70,8 +71,8 @@ def run_model(reality, organizations, users_list, dele_list, rds, v, dele_size, 
         for rd in range(rds):
             vote_list = generate_random_vote_list(m, v)
 
-            vs, ds, ps, opfs, upfs, infs, gs = vote_handler(
-                organizations[i], users_list[i], dele_list[i], vote_list, dele_size, dele_duration, search_ratio, gas_fee)
+            vs, ds, ps, opfs, upfs, infs, gs = vote_handler(reality,
+                                                            organizations[i], users_list[i], dele_list[i], vote_list, dele_size, dele_duration, search_ratio, gas_fee, tokens)
 
             votes.append(vs)
             deles.append(ds)
